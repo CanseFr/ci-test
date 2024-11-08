@@ -1,8 +1,11 @@
-import React from 'react';
+import React from "react";
 import logo from './logo.svg';
 import './App.css';
 
 function App() {
+  // useEffect(()=>{
+  //   fetch('http://localhost:3001').then(res => res.json()).then(json => console.log(json));
+  // },[])
   return (
     <div className="App">
       <header className="App-header">
