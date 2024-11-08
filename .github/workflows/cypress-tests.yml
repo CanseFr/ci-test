@@ -42,16 +42,7 @@ jobs:
 
       # 3. Installer les dépendances à la racine du monorepo
       - name: Install root dependencies
-        run: npm install
-
-      # 4. Installer les dépendances dans le dossier backend
-      - name: Install backend dependencies
-        run: npm install
-        working-directory: ./back
-
-        # 5. Installer les dépendances dans le dossier frontend
-        run: npm install
-        working-directory: ./front
+        run: npm run install:all
 
       # 6. Attendre que le service MySQL soit prêt
       - name: Wait for MySQL to be ready
