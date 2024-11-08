@@ -12,15 +12,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Définition du service MySQL en tant que conteneur Docker
     services:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_ROOT_PASSWORD: rootpassword
-          MYSQL_DATABASE: testdb
-          MYSQL_USER: testuser
-          MYSQL_PASSWORD: testpassword
+          MYSQL_ROOT_PASSWORD: Rootoorn
+          MYSQL_DATABASE: test-ci
+          MYSQL_USER: root
+          MYSQL_PASSWORD: Rootoorn
         ports:
           - 3306:3306
         options: >-
@@ -30,54 +29,45 @@ jobs:
           --health-retries=3
 
     steps:
-      # 1. Checkout du code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Installer Node.js version 18
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
-      # 3. Installer les dépendances à la racine du monorepo
       - name: Install root dependencies
         run: npm run install:all
 
-      # 6. Attendre que le service MySQL soit prêt
       - name: Wait for MySQL to be ready
         run: |
           until mysqladmin ping -h 127.0.0.1 --silent; do
             echo "Waiting for database connection..."
             sleep 2
           done
-
-      # 7. Exécuter le script de seed avec la variable DATABASE_URL configurée
+#Placer apres le back ?
       - name: Seed the database
         run: npm run seed
         env:
-          DATABASE_URL: "mysql://testuser:testpassword@127.0.0.1:3306/testdb"
+          DATABASE_URL: "mysql://root:Rootoorn@localhost:3306/test-ci"
 
-      # 8. Démarrer le backend et le frontend
       - name: Start backend and frontend
         run: |
           npm run start:back &
           npm run start:front &
         env:
           CI: true
-          DATABASE_URL: "mysql://testuser:testpassword@127.0.0.1:3306/testdb"
+          DATABASE_URL: "mysql://root:Rootoorn@localhost:3306/test-ci"
 
-      # 9. Attendre que les services soient prêts
       - name: Wait for services to be ready
         run: |
           npx wait-on http://localhost:3000 &&
           npx wait-on http://localhost:3001
 
-      # 10. Exécuter les tests Cypress
       - name: Run Cypress tests
         run: npx cypress run
 
-      # 11. Sauvegarder les artefacts de Cypress en cas d'échec
       - name: Upload Cypress artifacts
         if: failure()
         uses: actions/upload-artifact@v3
