@@ -1,0 +1,59 @@
+name: Cypress CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install root dependencies
+        run: npm install
+
+      # 4. Installer les dépendances dans le dossier backend
+      - name: Install backend dependencies
+        run: npm install
+        working-directory: ./back
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: ./front
+
+      - name: Seed the database
+        run: npm run seed
+
+      - name: Start backend and frontend
+        run: |
+          npm run start:back &
+          npm run start:front &
+        env:
+          CI: true
+
+      - name: Wait for services to be ready
+        run: |
+          npx wait-on http://localhost:3000 &&
+          npx wait-on http://localhost:3001
+
+      - name: Run Cypress tests
+        run: npx cypress run
+
+      - name: Upload Cypress artifacts
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: cypress-artifacts
+          path: front/cypress/screenshots
