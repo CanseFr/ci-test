@@ -45,7 +45,15 @@ jobs:
             echo "Waiting for database connection..."
             sleep 2
           done
-#Placer apres le back ?
+          
+
+      - name: Run Prisma migrations
+        run: npx prisma migrate deploy
+        working-directory: ./back
+        env:
+          DATABASE_URL: "mysql://root:Rootoorn@127.0.0.1:3306/test-ci"
+
+
       - name: Seed the database
         run: npm run seed
         env:
